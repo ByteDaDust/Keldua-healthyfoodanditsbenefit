@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Benefits of Health Foods</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <a class="logo" href="index%20(4).html"><span>Healthy</span><span>Food</span><small>Good Food, Better You!</small></a>
+    <a class="btn" href="index%20(4).html">← Menu</a>
+  </header>
+
+  <h1 class="page-title reveal">Benefits of Healthy Foods</h1>
+  <p class="lead reveal" style="--d:.1s">Match the food with its nutrients, then flip the cards to learn more.</p>
+
+  <!-- MATCH THE NUTRIENTS -->
+  <section class="panel reveal" style="--d:.2s">
+    <h2>Match the nutrients!</h2>
+    <p class="hint">Tap a nutrient on the left, then tap its benefit on the right.</p>
+    <div class="match">
+      <div class="col" id="left"></div>
+      <div class="col" id="right"></div>
+    </div>
+    <p class="score">Matched: <span id="count">0</span> / 5</p>
+    <p class="win" id="win">🎉 Perfect! You matched every nutrient.</p>
+  </section>
+
+  <!-- FLIP & LEARN -->
+  <h2 class="page-title reveal" style="--d:.3s; font-size:clamp(26px,3.4vw,46px); margin-top:6vh">Flip &amp; Learn</h2>
+  <p class="lead reveal" style="--d:.35s">Tap a card to reveal a fun fact.</p>
+  <section class="grid flips" id="flips"></section>
+
+  <nav class="pager">
+    <a class="btn" href="about.html">← About Healthy Foods</a>
+    <a class="btn" href="quiz.html">Do You Eat Healthy Food? →</a>
+  </nav>
+
+<script>
+  const pairs = [
+    { id: 1, icon: '🍌', n: 'Carbohydrate',   b: 'Provides energy for daily activities' },
+    { id: 2, icon: '🥚', n: 'Protein',        b: 'Builds and repairs body tissue' },
+    { id: 3, icon: '🥦', n: 'Vitamin & Mineral', b: 'Boosts immunity' },
+    { id: 4, icon: '🐟', n: 'Healthy Fat',    b: 'Keeps heart healthy' },
+    { id: 5, icon: '🍞', n: 'Fiber',          b: 'Helps digestion' }
+  ];
+  const shuffle = a => a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(x => x[1]);
+  const left = document.getElementById('left'), right = document.getElementById('right');
+  let picked = null, matched = 0;
+
+  pairs.forEach(p => {
+    const b = document.createElement('button');
+    b.className = 'chip nut-' + p.id; b.dataset.id = p.id; b.dataset.side = 'L';
+    b.textContent = p.icon + '  ' + p.n; left.appendChild(b);
+  });
+  shuffle(pairs).forEach(p => {
+    const b = document.createElement('button');
+    b.className = 'chip'; b.dataset.id = p.id; b.dataset.side = 'R';
+    b.textContent = p.b; right.appendChild(b);
+  });
+
+  document.querySelector('.match').addEventListener('click', e => {
+    const c = e.target.closest('.chip');
+    if (!c || c.classList.contains('done')) return;
+    if (c.dataset.side === 'L') {
+      document.querySelectorAll('.chip.sel').forEach(x => x.classList.remove('sel'));
+      picked = c; c.classList.add('sel'); return;
+    }
+    if (!picked) return;
+    if (picked.dataset.id === c.dataset.id) {
+      picked.classList.remove('sel'); picked.classList.add('done'); c.classList.add('done');
+      c.classList.add('nut-' + c.dataset.id);
+      picked = null; matched++;
+      document.getElementById('count').textContent = matched;
+      if (matched === 5) document.getElementById('win').classList.add('on');
+    } else {
+      c.classList.add('wrong'); setTimeout(() => c.classList.remove('wrong'), 450);
+    }
+  });
+
+  const facts = [
+    ['🥑', 'Avocados actually contain more potassium than bananas.'],
+    ['🥦', 'Ounce for ounce, fresh broccoli has more Vitamin C than an orange.'],
+    ['🍫', 'High-quality dark chocolate is rich in antioxidants, fiber, and iron.'],
+    ['🍎', 'About 25% of an apple is air, which is why apples float.'],
+    ['🥕', 'Many original carrots were purple, yellow, or white, not orange.'],
+    ['🍌', 'Botanically, bananas are berries, but strawberries are not.']
+  ];
+  const fl = document.getElementById('flips');
+  facts.forEach(([i, t]) => {
+    const b = document.createElement('button');
+    b.className = 'flip'; b.setAttribute('aria-label', 'Flip card');
+    b.innerHTML = `<div class="flip-in"><div class="face front"><div><span>${i}</span>Flip me!</div></div><div class="face back">${t}</div></div>`;
+    b.addEventListener('click', () => b.classList.toggle('on'));
+    fl.appendChild(b);
+  });
+</script>
+</body>
+</html>

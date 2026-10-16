@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Do You Eat Healthy Food?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  /* ---------- Submit button ---------- */
+  .submit-row { text-align: center; margin-top: 18px; }
+  .submit-btn {
+    font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 1.15rem;
+    background: #d62839; color: #fff; border: 0; border-radius: 999px;
+    padding: 12px 34px; cursor: pointer; box-shadow: 0 5px 0 #9e1b29;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 7px 0 #9e1b29; }
+  .submit-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #9e1b29; }
+
+  /* ---------- Red envelope ---------- */
+  .envelope-section { text-align: center; padding: 10px 16px 0; }
+  .envelope-section[hidden] { display: none; }
+  .env-title { font-family: 'Fredoka', sans-serif; margin: 6px 0 4px; }
+  .env-hint { font-family: 'Patrick Hand', cursive; font-size: 1.15rem; margin: 0 0 14px; }
+
+  .env-stage {
+    width: min(340px, 92%); margin: 0 auto;
+    padding-top: 0; transition: padding-top .7s ease .15s;
+  }
+  .env-stage.open { padding-top: 185px; }
+
+  .envelope {
+    position: relative; width: 100%; height: 220px; cursor: pointer;
+    outline: none; animation: wiggle 2.2s ease-in-out infinite;
+    filter: drop-shadow(0 10px 14px rgba(0,0,0,.25));
+  }
+  .envelope:focus-visible { outline: 3px dashed #ffb703; outline-offset: 6px; }
+  .envelope.open { animation: none; cursor: default; }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(0); }
+    8% { transform: rotate(-2.5deg); }
+    16% { transform: rotate(2.5deg); }
+    24% { transform: rotate(0); }
+  }
+
+  .env-back { position: absolute; inset: 0; background: #a71d2a; border-radius: 10px; }
+  .env-front {
+    position: absolute; inset: 0; border-radius: 10px; z-index: 3;
+    background: linear-gradient(180deg, #e63946, #d62839);
+    clip-path: polygon(0 0, 50% 52%, 100% 0, 100% 100%, 0 100%);
+  }
+  .env-front::after {            /* little gold seal */
+    content: '🌟'; position: absolute; left: 50%; top: 58%;
+    transform: translate(-50%, -50%); font-size: 2rem;
+  }
+  .env-flap {
+    position: absolute; left: 0; right: 0; top: 0; height: 56%;
+    background: linear-gradient(180deg, #c81e30, #e03747);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    transform-origin: top center; z-index: 4;
+    transform: perspective(800px) rotateX(0deg);
+    transition: transform .6s ease, z-index 0s .3s;
+  }
+  .envelope.open .env-flap { transform: perspective(800px) rotateX(180deg); z-index: 1; }
+
+  /* The card stays BEHIND the front pocket (z-index 2 < 3), so it slides
+     up and out of the envelope instead of popping over it. */
+  .env-card {
+    position: absolute; left: 7%; right: 7%; top: 14px; height: 196px; z-index: 2;
+    background: #fff3b0; border: 3px solid #ffd23f; border-radius: 12px;
+    padding: 16px 12px 12px; box-sizing: border-box;
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    transform: translateY(0);
+    transition: transform 1s cubic-bezier(.22,.9,.3,1) .5s;
+  }
+  .envelope.open .env-card { transform: translateY(-172px); }
+  .env-card .score { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 2.6rem; color: #d62839; line-height: 1; }
+  .env-card .headline { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 1.25rem; margin: 8px 0 2px; color: #5a3a00; }
+  .env-card .sub { font-family: 'Patrick Hand', cursive; font-size: 1.1rem; color: #5a3a00; margin: 0; }
+  .env-card .mini { width: 80%; height: 10px; background: #fff; border-radius: 99px; margin-top: 10px; overflow: hidden; border: 2px solid #ffd23f; }
+  .env-card .mini i { display: block; height: 100%; width: 0; background: #2a9d4a; transition: width 1s ease 1s; }
+
+  .retry-row { margin-top: 18px; }
+  .retry-row[hidden] { display: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .envelope { animation: none; }
+    .env-flap, .env-card, .env-stage, .env-card .mini i { transition-duration: .01s; transition-delay: 0s; }
+  }
+</style>
+</head>
+<body>
+  <header class="top">
+    <a class="logo" href="index%20(4).html"><span>Healthy</span><span>Food</span><small>Good Food, Better You!</small></a>
+    <a class="btn" href="index%20(4).html">← Menu</a>
+  </header>
+
+  <h1 class="page-title reveal">Do You Eat Healthy Food?</h1>
+  <p class="lead reveal" style="--d:.1s">Tick the boxes when you make a healthy choice today, then press Submit!</p>
+
+  <section class="panel reveal" style="--d:.2s" id="quizPanel">
+    <h2>Healthy Choices Checklist</h2>
+    <ul class="check" id="check">
+      <li><label><input type="checkbox"> 🥗 Eat fruits and vegetables</label></li>
+      <li><label><input type="checkbox"> 💧 Drink enough water</label></li>
+      <li><label><input type="checkbox"> 🌾 Choose whole grains</label></li>
+      <li><label><input type="checkbox"> 🍗 Eat protein (meat, egg, fish, beans, nuts)</label></li>
+      <li><label><input type="checkbox"> 🍬 Limit junk food and sugary drinks</label></li>
+      <li><label><input type="checkbox"> 😴 Get enough sleep</label></li>
+      <li><label><input type="checkbox"> 🏃 Be active</label></li>
+    </ul>
+    <div class="submit-row">
+      <button type="button" class="submit-btn" id="submitBtn">Submit ✉️</button>
+    </div>
+  </section>
+
+  <section class="envelope-section" id="envSection" hidden aria-live="polite">
+    <h2 class="env-title">You got a red envelope! 🧧</h2>
+    <p class="env-hint" id="envHint">Tap the envelope to open it!</p>
+    <div class="env-stage" id="envStage">
+      <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="Open your red envelope">
+        <div class="env-back"></div>
+        <div class="env-card">
+          <div class="score" id="score">0 / 7</div>
+          <div class="headline" id="headline"></div>
+          <p class="sub" id="sub"></p>
+          <div class="mini"><i id="bar"></i></div>
+        </div>
+        <div class="env-front"></div>
+        <div class="env-flap"></div>
+      </div>
+    </div>
+    <div class="retry-row" id="retryRow" hidden>
+      <button type="button" class="btn" id="retryBtn">↻ Try again</button>
+    </div>
+  </section>
+
+  <section class="panel action reveal" style="--d:.4s" id="actionPanel" hidden>
+    <h2>Take Action!</h2>
+    <p class="hint">Pick one goal for tomorrow:</p>
+    <ul id="goals"></ul>
+  </section>
+
+  <p class="motto reveal" style="--d:.6s">Small changes in your food make a big difference in your future! 🌟</p>
+
+  <nav class="pager">
+    <a class="btn" href="benefits.html">← Benefits of Health Foods</a>
+    <a class="btn" href="index%20(4).html">Back to Menu</a>
+  </nav>
+
+<script>
+  const boxes = [...document.querySelectorAll('#check input')];
+  const $ = id => document.getElementById(id);
+  const submitBtn = $('submitBtn'), envSection = $('envSection'), envelope = $('envelope'),
+        envStage = $('envStage'), envHint = $('envHint'), retryRow = $('retryRow'),
+        actionPanel = $('actionPanel'), goals = $('goals');
+
+  // Message printed on the card for each score (0–7)
+  const msgs = [
+    ['Time for a fresh start! 🌱', 'Try one healthy choice today.'],
+    ['Good beginning! 🙂', 'Keep going, add one healthy habit at a time.'],
+    ['Nice effort! 👍', 'Keep going, you are on the right track.'],
+    ['Doing well! 😊', 'Keep going, a few more habits to go.'],
+    ['Great job! 🎉', 'Keep going, you are almost a healthy-food hero.'],
+    ['Almost perfect! 🌟', 'Just one more habit to go.'],
+    ['Awesome! 🏆', 'You are a healthy-food champion!']
+  ];
+  const msgFor = n => msgs[Math.min(Math.max(n - 1, 0), 6)];
+
+  const tips = [
+    'Add one fruit or vegetable to every meal',
+    'Swap one sugary drink for water',
+    'Choose brown rice or whole-grain bread',
+    'Include a protein at breakfast',
+    'Keep snacks like nuts or fruit in your bag',
+    'Go to bed 30 minutes earlier',
+    'Walk or play outside for 20 minutes'
+  ];
+
+  function submitQuiz() {
+    const n = boxes.filter(b => b.checked).length;
+    const [headline, sub] = n === 0 ? msgs[0] : msgFor(n);
+
+    $('score').textContent = `${n} / ${boxes.length}`;
+    $('headline').textContent = headline;
+    $('sub').textContent = sub;
+    $('bar').style.width = '0';
+    $('bar').dataset.w = (n / boxes.length * 100) + '%';
+
+    const missing = boxes.map((b, i) => b.checked ? null : tips[i]).filter(Boolean);
+    goals.innerHTML = missing.length
+      ? missing.slice(0, 3).map(t => `<li>${t}</li>`).join('')
+      : '<li>You did them all. Keep it up and share the habit with a friend!</li>';
+
+    // reset envelope to closed and show it
+    envelope.classList.remove('open');
+    envStage.classList.remove('open');
+    retryRow.hidden = true;
+    actionPanel.hidden = true;
+    envHint.textContent = 'Tap the envelope to open it!';
+    envSection.hidden = false;
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = .6;
+    envSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function openEnvelope() {
+    if (envelope.classList.contains('open') || envSection.hidden) return;
+    envelope.classList.add('open');
+    envStage.classList.add('open');
+    envHint.textContent = 'Here is your result!';
+    requestAnimationFrame(() => { $('bar').style.width = $('bar').dataset.w; });
+    setTimeout(() => envStage.scrollIntoView({ behavior: 'smooth', block: 'center' }), 900);
+    setTimeout(() => {
+      retryRow.hidden = false;
+      actionPanel.hidden = false;
+    }, 1400);
+  }
+
+  function reset() {
+    boxes.forEach(b => b.checked = false);
+    envSection.hidden = true;
+    actionPanel.hidden = true;
+    submitBtn.disabled = false;
+    submitBtn.style.opacity = 1;
+    $('quizPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  submitBtn.addEventListener('click', submitQuiz);
+  envelope.addEventListener('click', openEnvelope);
+  envelope.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEnvelope(); }
+  });
+  $('retryBtn').addEventListener('click', reset);
+</script>
+</body>
+</html>

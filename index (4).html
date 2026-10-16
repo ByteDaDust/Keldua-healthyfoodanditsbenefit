@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Healthy Food</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #ff353b;
+    --navy: #1b1438;
+    --grey: #c9cfd6;
+    --accent: #f4f26b;
+    --white: #ffffff;
+    --ease: cubic-bezier(.65, 0, .25, 1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--red);
+    font-family: 'Outfit', 'Poppins', 'Segoe UI', sans-serif;
+    color: var(--white);
+    overflow: hidden;
+  }
+
+  .screen { position: fixed; inset: 0; }
+
+  /* ---------- Title (shared look on both pages) ---------- */
+  .title {
+    display: flex;
+    font-weight: 900; line-height: .9; letter-spacing: -.01em; text-transform: uppercase;
+  }
+  .title span { display: block; white-space: nowrap; will-change: transform; }
+  .tagline { font-weight: 800; width: fit-content; will-change: transform; }
+
+  /* ---------- Landing ---------- */
+  #landing {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 0 5vw;
+  }
+  #landing .title { flex-direction: column; align-items: center; font-size: clamp(64px, 12.5vw, 190px); }
+  #landing .tagline { font-size: clamp(14px, 1.3vw, 20px); margin-top: 2.2vh; }
+
+  .btn {
+    display: inline-block; text-decoration: none; cursor: pointer;
+    background: var(--navy); color: var(--white);
+    font-family: inherit; font-weight: 800; font-size: clamp(16px, 1.6vw, 22px);
+    border: 2px solid rgba(255,255,255,.18); border-radius: 12px;
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+  }
+  .btn:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 10px 24px rgba(0,0,0,.3); background: #26204d; }
+  .btn:active { transform: translateY(0) scale(.98); }
+  .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+  #enter {
+    margin-top: 4.5vh; width: min(320px, 70vw); padding: 8px 0; text-transform: uppercase;
+    /* comes back in after the title has settled (when returning from page 2) */
+    transition: opacity .5s ease .55s, transform .5s ease .55s, box-shadow .2s ease, background .2s ease;
+  }
+  body.entered #enter {
+    opacity: 0; transform: translateY(18px); pointer-events: none;
+    transition: opacity .35s ease, transform .35s ease;
+  }
+
+  /* ---------- Menu ---------- */
+  #menu { pointer-events: none; }
+  body.entered #menu { pointer-events: auto; }
+
+  #menu .head { position: absolute; top: 6vh; left: 6vw; }
+  #menu .title { flex-direction: row; gap: .26em; align-items: flex-start; font-size: clamp(40px, 6.2vw, 96px); }
+  #menu .tagline { margin-top: 6px; font-size: clamp(12px, 1vw, 15px); }
+
+  /* only one copy of the title is visible at a time; the swap happens after the morph */
+  #menu .head .title, #menu .head .tagline { visibility: hidden; }
+  body.head-on #menu .head .title, body.head-on #menu .head .tagline { visibility: visible; }
+  body.head-on #landing .title, body.head-on #landing .tagline { visibility: hidden; }
+
+  .path {
+    position: absolute; left: 6vw; right: 6vw; top: 50%; transform: translateY(-50%);
+    display: flex; align-items: flex-end; justify-content: space-between;
+  }
+
+  .node {
+    position: relative; padding-top: 34px; flex: 0 0 auto;
+    opacity: 0; transform: translateY(28px);
+    transition: opacity .35s ease, transform .35s ease;
+  }
+  body.entered .node {
+    opacity: 1; transform: none;
+    transition: opacity .7s ease var(--d), transform .9s cubic-bezier(.2, .9, .3, 1.08) var(--d);
+  }
+  .node:nth-child(1) { --d: .6s; }
+  .node:nth-child(3) { --d: .8s; }
+  .node:nth-child(5) { --d: 1s; }
+
+  /* grey tab + icon above the button */
+  .node::before {
+    content: ""; position: absolute; left: 8%; right: 8%; top: 22px; height: 34px;
+    background: var(--grey); border-radius: 18px 18px 0 0;
+  }
+  .icon {
+    position: absolute; left: 50%; top: 0; transform: translateX(-50%);
+    width: 56px; height: 56px; border-radius: 50%; background: var(--grey);
+    display: grid; place-items: center;
+  }
+  .icon svg { width: 30px; height: 30px; stroke: #000; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .card {
+    position: relative; z-index: 2; display: block; text-decoration: none; color: var(--white);
+    background: var(--navy); border: 2px solid var(--accent); border-radius: 10px;
+    padding: 16px 28px; font-weight: 800; font-size: clamp(15px, 1.5vw, 22px); text-align: center; white-space: nowrap;
+    box-shadow: 0 10px 22px rgba(0,0,0,.28);
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+  }
+  .card:hover { transform: translateY(-4px) scale(1.04); box-shadow: 0 16px 30px rgba(0,0,0,.35); background: #26204d; }
+  .card:active { transform: scale(.97); }
+  .card:focus-visible { outline: 3px solid var(--white); outline-offset: 4px; }
+
+  /* dashed connectors that draw in */
+  .link {
+    flex: 1 1 0; height: 0; margin-bottom: 30px; min-width: 20px;
+    border-top: 3px dashed rgba(255,255,255,.85);
+    transform: scaleX(0); transform-origin: left;
+    transition: transform .3s ease;
+  }
+  body.entered .link { transform: scaleX(1); transition: transform .7s var(--ease) var(--d); }
+  .link:nth-child(2) { --d: .95s; }
+  .link:nth-child(4) { --d: 1.15s; }
+
+  .back { position: absolute; right: 6vw; top: 6vh; padding: 8px 18px; font-size: 15px; opacity: 0; transition: opacity .3s ease; }
+  body.entered .back { opacity: 1; transition: opacity .6s ease 1.1s; }
+
+  /* ---------- Fun fact ---------- */
+  .funfact {
+    position: absolute; left: 50%; bottom: 7vh; transform: translateX(-50%);
+    width: min(760px, 88vw); text-align: center;
+    font-size: clamp(14px, 1.4vw, 20px); font-weight: 600; line-height: 1.4;
+    opacity: 0; transition: opacity .3s ease;
+  }
+  .funfact b { font-weight: 900; text-transform: uppercase; letter-spacing: .04em; }
+  body.entered .funfact { opacity: 1; transition: opacity .8s ease 1.3s; }
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 860px) {
+    .path { flex-direction: column; align-items: center; top: 56%; }
+    .link {
+      flex: 0 0 40px; width: 0; border-top: 0; border-left: 3px dashed rgba(255,255,255,.85);
+      margin: 0; transform: scaleY(0); transform-origin: top;
+    }
+    body.entered .link { transform: scaleY(1); }
+    .node { padding-top: 30px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before { transition-duration: .01s !important; transition-delay: 0s !important; }
+  }
+  /* ================= POSTER THEME (chalkboard + wooden frame) ================= */
+  html { background: #d9d1c3; }
+  body {
+    font-family: 'Fredoka', 'Segoe UI', sans-serif;
+    background:
+      radial-gradient(circle at 15% 12%, rgba(255,255,255,.08), transparent 38%),
+      radial-gradient(circle at 85% 75%, rgba(255,255,255,.06), transparent 42%),
+      #2d3b37;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: 50; pointer-events: none;
+    border: 14px solid #b8a084;
+    box-shadow: inset 0 0 0 4px #6e5a45, inset 0 0 60px rgba(0,0,0,.45);
+  }
+
+  /* sticker title */
+  .title { font-family: 'Fredoka', sans-serif; font-weight: 700; text-transform: none; letter-spacing: 0; line-height: .95; }
+  .title span {
+    color: #27362f; -webkit-text-stroke: .1em #fff; paint-order: stroke fill;
+    filter: drop-shadow(0 .05em 0 rgba(0,0,0,.4));
+  }
+  /* yellow ribbon tagline */
+  .tagline {
+    font-weight: 600; background: #f5b83d; color: #3a2a1a;
+    padding: .2em 1.2em; clip-path: polygon(0 0, 100% 0, 96% 50%, 100% 100%, 0 100%, 4% 50%);
+  }
+
+  .btn {
+    background: #fff4e0; color: #3a2a1a; border: 2px solid #f5b83d; font-weight: 600;
+    box-shadow: 0 4px 0 #b8801a;
+  }
+  .btn:hover { background: #fff; box-shadow: 0 6px 0 #b8801a; }
+  .btn:active { box-shadow: 0 1px 0 #b8801a; }
+  #enter { background: #f5b83d; }
+  #enter:hover { background: #ffc94f; }
+
+  /* menu tabs in the poster's orange / green / purple */
+  .node:nth-child(1) { --c: #f5a04a; --cd: #b85a12; }
+  .node:nth-child(3) { --c: #7bbf5f; --cd: #3f7d2c; }
+  .node:nth-child(5) { --c: #a77de0; --cd: #6c3fb0; }
+  .node::before { background: var(--c); }
+  .icon { background: var(--c); }
+  .card {
+    background: #fff7e8; color: var(--cd); border: 3px solid var(--c); font-weight: 600;
+    box-shadow: 0 6px 0 var(--c), 0 12px 22px rgba(0,0,0,.3);
+  }
+  .card:hover { background: #fff; box-shadow: 0 8px 0 var(--c), 0 16px 28px rgba(0,0,0,.35); }
+  .card:focus-visible { outline-color: #f4f26b; }
+
+  /* fun fact as a speech bubble */
+  .funfact {
+    background: #fff; color: #3a2f45; padding: 14px 26px; border-radius: 30px; border: 2px dashed #bfb8c9;
+    font-family: 'Patrick Hand', sans-serif; font-weight: 400; font-size: clamp(16px, 1.6vw, 22px);
+    box-shadow: 0 5px 0 rgba(0,0,0,.25);
+  }
+  .funfact b { font-family: 'Fredoka', sans-serif; color: #d9701a; }
+  /* 4th button: Basket Catch (4 tabs, so tighter cards + earlier stacking) */
+  .node:nth-child(7) { --c: #5bb0e6; --cd: #2a78ad; --d: 1.2s; }
+  .link:nth-child(6) { --d: 1.35s; }
+  .card { padding: 16px 20px; font-size: clamp(14px, 1.3vw, 20px); }
+  @media (max-width: 1100px) {
+    .path { flex-direction: column; align-items: center; top: 56%; }
+    .link {
+      flex: 0 0 28px; width: 0; border-top: 0; border-left: 3px dashed rgba(255,255,255,.85);
+      margin: 0; transform: scaleY(0); transform-origin: top;
+    }
+    body.entered .link { transform: scaleY(1); }
+    .node { padding-top: 28px; }
+  }
+  /* hover / keyboard-focus description bubbles on the menu buttons */
+  .card:hover, .card:focus-visible { z-index: 20; }
+  .card::after {
+    content: attr(data-desc);
+    position: absolute; left: 50%; top: calc(100% + 16px);
+    width: max-content; max-width: min(260px, 80vw);
+    transform: translate(-50%, 6px);
+    background: #fff; color: #3a2f45; padding: 12px 18px; border-radius: 18px; border: 2px dashed #bfb8c9;
+    font-family: 'Patrick Hand', sans-serif; font-weight: 400; font-size: clamp(16px, 1.4vw, 20px); line-height: 1.25;
+    white-space: normal; text-align: center;
+    box-shadow: 0 5px 0 rgba(0,0,0,.25);
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease, visibility .2s;
+  }
+  .card::before {
+    content: ""; position: absolute; left: 50%; top: calc(100% + 9px);
+    width: 14px; height: 14px; background: #fff; border-left: 2px dashed #bfb8c9; border-top: 2px dashed #bfb8c9;
+    transform: translate(-50%, 6px) rotate(45deg); z-index: 1;
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease, visibility .2s;
+  }
+  .card:hover::after, .card:focus-visible::after { opacity: 1; visibility: visible; transform: translate(-50%, 0); }
+  .card:hover::before, .card:focus-visible::before { opacity: 1; visibility: visible; transform: translate(-50%, 0) rotate(45deg); }
+</style>
+</head>
+<body>
+
+<!-- ================= PAGE 1: LANDING ================= -->
+<section id="landing" class="screen">
+  <h1 class="title"><span>Healthy</span><span>Food</span></h1>
+  <p class="tagline">Good Food, Better You!</p>
+  <button id="enter" class="btn">Enter</button>
+</section>
+
+<!-- ================= PAGE 2: MENU ================= -->
+<section id="menu" class="screen">
+  <div class="head">
+    <h2 class="title"><span>Healthy</span><span>Food</span></h2>
+    <p class="tagline">Good Food, Better You!</p>
+  </div>
+
+  <!-- Optional: go back to the landing page -->
+  <button id="back" class="btn back">← Back</button>
+
+  <!--
+    ★ TO ADD YOUR LINKS ★
+    Replace each href="#" below with your page / game link, e.g. href="about.html"
+    or href="https://example.com". While href="#", the button does nothing.
+  -->
+  <div class="path">
+    <div class="node">
+      <div class="icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="17"/><circle cx="12" cy="7.5" r=".6"/></svg>
+      </div>
+      <a class="card" id="btn-about" href="about.html" data-desc="What is healthy food? And what makes healthy food important?">About Healthy Foods</a>
+    </div>
+
+    <div class="link"></div>
+
+    <div class="node">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" style="fill:#000;stroke:none"><path d="M12 22c0-5 0-8 2-11C11 12 6 12 4 9c0-1 .5-2 2-2 3 0 6 1.500 7.500 4C14 7 16 4 20 2c1 5-1 9-5 11-1 1.500-1 4-1 9h-2z"/></svg>
+      </div>
+      <a class="card" id="btn-benefits" href="benefits.html" data-desc="What benefits does healthy food give to the human body?">Benefits of Health Foods</a>
+    </div>
+
+    <div class="link"></div>
+
+    <div class="node">
+      <div class="icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.200 9.500a2.900 2.900 0 1 1 4.200 2.600c-.9.500-1.400 1-1.400 2"/><circle cx="12" cy="17.200" r=".6"/></svg>
+      </div>
+      <a class="card" id="btn-quiz" href="quiz.html" data-desc="Check what healthy things you have done.">Do You Eat Healthy Food?</a>
+    </div>
+
+    <div class="link"></div>
+
+    <div class="node">
+      <div class="icon">
+        <svg viewBox="0 0 24 24"><path d="M3 10h18l-2 10H5z"/><path d="M7 10l5-6 5 6"/></svg>
+      </div>
+      <a class="card" id="btn-game" href="Basket%20Catch.html" data-desc="Test your knowledge head on by picking the right food!">Play Basket Catch</a>
+    </div>
+  </div>
+
+  <!-- Fun fact: changes every time you arrive on this page -->
+  <p class="funfact" id="funfact"><b>Fun fact:</b><span id="funfact-text"></span></p>
+</section>
+
+<script>
+  const body = document.body;
+  const landing = document.getElementById('landing');
+  const head = document.querySelector('#menu .head');
+  const funFactText = document.getElementById('funfact-text');
+
+  // ★ Add or edit fun facts here ★
+  const funFacts = [
+    "About 25% of an apple's volume is made up of air, which is why apples float in water.",
+    "Originally, most cultivated carrots grown by farmers were purple, yellow, or white instead of orange.",
+    "A single pineapple plant takes about two to three years to produce just one fruit.",
+    "Botanically speaking, strawberries are not actually berries, but bananas and avocados are.",
+    "Ounce for ounce, fresh broccoli contains more Vitamin C than an orange.",
+    "Avocados actually contain more potassium than bananas.",
+    "High-quality dark chocolate is rich in antioxidants, fiber, and iron.",
+    "Bananas naturally contain a tiny fraction of radioactive potassium."
+  ];
+  let lastFact = -1;
+  function showNewFact() {
+    let i;
+    do { i = Math.floor(Math.random() * funFacts.length); }
+    while (i === lastFact && funFacts.length > 1);
+    lastFact = i;
+    funFactText.textContent = ' ' + funFacts[i];
+  }
+
+  // ---- Seamless title morph ----
+  // The big title literally travels to the top-left corner (and back), word by word.
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const DURATION = REDUCED ? 1 : 1100;
+  const EASE = 'cubic-bezier(.65, 0, .25, 1)';
+  const PARTS = '.title span, .tagline';
+
+  function morph(fromRoot, toRoot) {
+    const from = [...fromRoot.querySelectorAll(PARTS)];
+    const to = [...toRoot.querySelectorAll(PARTS)];
+    return from.map((el, i) => {
+      const a = el.getBoundingClientRect();
+      const b = to[i].getBoundingClientRect();
+      el.style.transformOrigin = '0 0';
+      return el.animate(
+        [
+          { transform: 'translate(0px, 0px) scale(1)' },
+          { transform: `translate(${b.left - a.left}px, ${b.top - a.top}px) scale(${b.width / a.width})` }
+        ],
+        { duration: DURATION, easing: EASE, fill: 'forwards' }
+      );
+    });
+  }
+
+  let busy = false;
+  function go(entering) {
+    if (busy) return;
+    busy = true;
+
+    if (entering) showNewFact();
+
+    const anims = entering ? morph(landing, head) : morph(head, landing);
+    body.classList.toggle('entered', entering);   // cards / lines / fun fact animate via CSS
+
+    Promise.all(anims.map(a => a.finished)).then(() => {
+      body.classList.toggle('head-on', entering);  // swap which title copy is visible
+      anims.forEach(a => a.cancel());              // same frame: no flicker
+      busy = false;
+    });
+  }
+
+  document.getElementById('enter').addEventListener('click', () => go(true));
+  document.getElementById('back').addEventListener('click', () => go(false));
+
+  // Buttons whose href is still "#" won't jump the page
+  document.querySelectorAll('a[href="#"]').forEach(a =>
+    a.addEventListener('click', e => e.preventDefault())
+  );
+</script>
+</body>
+</html>
