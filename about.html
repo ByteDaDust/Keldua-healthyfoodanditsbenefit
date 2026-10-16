@@ -8,44 +8,176 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<style>
+  /* Two columns: title + intro on the left, expandable points on the right */
+  .about-layout{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);
+    gap:3rem;
+    align-items:start;
+  }
+  .about-intro{position:sticky;top:1.5rem}
+  .about-intro .lead{margin-bottom:0}
+
+  .points{display:flex;flex-direction:column;align-items:flex-end;gap:22px;padding-top:6px}
+
+  /* Same look as the other cards: colored card, cream label tab, white note */
+  .point{
+    --c:#f5a04a; --cd:#c4601a;
+    position:relative;
+    width:46%;                         /* small tab on the right when closed */
+    background:var(--c);
+    border-radius:18px;
+    padding:12px;
+    box-shadow:0 0 0 5px rgba(255,255,255,.14), 6px 8px 0 rgba(0,0,0,.28);
+    transition:width .45s cubic-bezier(.2,.8,.2,1), transform .25s ease;
+  }
+  .point.a1{--c:#7bbf5f;--cd:#3f7d2c}
+  .point.a2{--c:#5bb0e6;--cd:#2a78ad}
+  .point.a3{--c:#a77de0;--cd:#6c3fb0}
+  .point.re{--c:#f5a04a;--cd:#c4601a}
+  .point:not(.open):hover{transform:translateY(-4px) rotate(-.6deg)}
+  .point.open{width:100%;min-height:250px}   /* big box when opened */
+
+  .point-head{
+    all:unset;
+    box-sizing:border-box;
+    width:100%;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 18px;
+    cursor:pointer;
+    background:var(--paper);
+    color:var(--cd);
+    border-radius:14px;
+    box-shadow:0 3px 0 rgba(0,0,0,.2);
+    font-family:'Fredoka',sans-serif;
+    font-weight:700;
+    font-size:18px;
+    letter-spacing:.02em;
+    text-transform:uppercase;
+    transition:background .2s;
+  }
+  .point-head:hover{background:#fff}
+  .point-head:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+  .point-head .emoji{font-size:24px;line-height:1}
+  .point-head .title{flex:1}
+  .point-head .chev{font-size:13px;transition:transform .3s}
+  .point.open .point-head{font-size:21px}
+  .point.open .point-head .chev{transform:rotate(180deg)}
+
+  /* note panel slides open */
+  .point-body{
+    display:grid;
+    grid-template-rows:0fr;
+    transition:grid-template-rows .4s ease;
+  }
+  .point.open .point-body{grid-template-rows:1fr}
+  .point-body > div{overflow:hidden}
+  .point-body p{
+    margin-top:14px;
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:8px;
+    padding:22px 20px 26px;
+    font-size:24px;
+    line-height:1.3;
+    text-align:center;
+    box-shadow:0 4px 0 rgba(0,0,0,.15);
+  }
+
+  @media (max-width:760px){
+    .about-layout{grid-template-columns:1fr;gap:1.5rem}
+    .about-intro{position:static}
+    .point{width:72%}
+    .point.open{width:100%}
+  }
+</style>
 </head>
 <body>
   <header class="top">
-    <a class="logo" href="index%20(4).html"><span>Healthy</span><span>Food</span><small>Good Food, Better You!</small></a>
-    <a class="btn" href="index%20(4).html">← Menu</a>
+    <a class="logo" href="index%20.html"><span>Healthy</span><span>Food</span><small>Good Food, Better You!</small></a>
+    <a class="btn" href="index%20.html">← Menu</a>
   </header>
 
-  <h1 class="page-title reveal">About Healthy Foods</h1>
-  <p class="lead reveal" style="--d:.1s">An analytical exposition: one clear position, three arguments to support it, and a closing statement.</p>
+  <main class="about-layout">
+    <div class="about-intro">
+      <h1 class="page-title reveal">About Healthy Foods</h1>
+      <p class="lead reveal" style="--d:.1s">Healthy food is food that provides the nutrients our bodies need to stay strong and function properly. It includes fruits, vegetables, whole grains, protein-rich foods, and dairy products. These foods contain essential nutrients such as vitamins, minerals, protein, carbohydrates, and fiber.</p>
+    </div>
 
-  <section class="grid exposition">
-    <article class="ecard thesis reveal" style="--d:.2s">
-      <h3>Thesis</h3><span class="emoji">🍎</span>
-      <p>Healthy food is important for students because it helps our body stay strong, active, and supports better learning.</p>
-    </article>
-    <article class="ecard a1 reveal" style="--d:.35s">
-      <h3>Argument 1</h3><span class="emoji">⚡</span>
-      <p>Healthy food provides energy for our daily activities and helps us stay active, so we can do our best at school.</p>
-    </article>
-    <article class="ecard a2 reveal" style="--d:.5s">
-      <h3>Argument 2</h3><span class="emoji">🧠</span>
-      <p>Healthy food supports better concentration and memory, helping us focus in class and understand lessons more easily.</p>
-    </article>
-    <article class="ecard a3 reveal" style="--d:.65s">
-      <h3>Argument 3</h3><span class="emoji">🌱</span>
-      <p>Healthy eating builds good habits that last a lifetime, prevents disease, and helps us grow into a healthier and stronger person.</p>
-    </article>
-    <article class="ecard re reveal" style="--d:.8s">
-      <h3>Reiteration</h3><span class="emoji">💪</span>
-      <p>Therefore, choosing healthy food is a simple step toward a stronger body, better learning, and a healthier future.</p>
-    </article>
-  </section>
+    <section class="points" aria-label="Why healthy food matters">
+      <article class="point thesis open reveal" style="--d:.2s">
+        <button class="point-head" aria-expanded="true" aria-controls="p-thesis" id="h-thesis">
+          <span class="emoji">🍎</span><span class="title">Thesis</span><span class="chev">▼</span>
+        </button>
+        <div class="point-body" id="p-thesis" role="region" aria-labelledby="h-thesis"><div>
+          <p>Healthy food is important for students because it helps our body stay strong, active, and supports better learning.</p>
+        </div></div>
+      </article>
+
+      <article class="point a1 reveal" style="--d:.35s">
+        <button class="point-head" aria-expanded="false" aria-controls="p-a1" id="h-a1">
+          <span class="emoji">⚡</span><span class="title">Argument 1</span><span class="chev">▼</span>
+        </button>
+        <div class="point-body" id="p-a1" role="region" aria-labelledby="h-a1"><div>
+          <p>Healthy food provides energy for our daily activities and helps us stay active, so we can do our best at school.</p>
+        </div></div>
+      </article>
+
+      <article class="point a2 reveal" style="--d:.5s">
+        <button class="point-head" aria-expanded="false" aria-controls="p-a2" id="h-a2">
+          <span class="emoji">🧠</span><span class="title">Argument 2</span><span class="chev">▼</span>
+        </button>
+        <div class="point-body" id="p-a2" role="region" aria-labelledby="h-a2"><div>
+          <p>Healthy food supports better concentration and memory, helping us focus in class and understand lessons more easily.</p>
+        </div></div>
+      </article>
+
+      <article class="point a3 reveal" style="--d:.65s">
+        <button class="point-head" aria-expanded="false" aria-controls="p-a3" id="h-a3">
+          <span class="emoji">🌱</span><span class="title">Argument 3</span><span class="chev">▼</span>
+        </button>
+        <div class="point-body" id="p-a3" role="region" aria-labelledby="h-a3"><div>
+          <p>Healthy eating builds good habits that last a lifetime, prevents disease, and helps us grow into a healthier and stronger person.</p>
+        </div></div>
+      </article>
+
+      <article class="point re reveal" style="--d:.8s">
+        <button class="point-head" aria-expanded="false" aria-controls="p-re" id="h-re">
+          <span class="emoji">💪</span><span class="title">Reiteration</span><span class="chev">▼</span>
+        </button>
+        <div class="point-body" id="p-re" role="region" aria-labelledby="h-re"><div>
+          <p>Therefore, choosing healthy food is a simple step toward a stronger body, better learning, and a healthier future.</p>
+        </div></div>
+      </article>
+    </section>
+  </main>
 
   <p class="motto reveal" style="--d:1s">Healthy food isn't a diet, it's a lifestyle! 🥦</p>
 
   <nav class="pager">
-    <a class="btn" href="index%20(4).html">← Menu</a>
+    <a class="btn" href="index%20.html">← Menu</a>
     <a class="btn" href="benefits.html">Benefits of Health Foods →</a>
   </nav>
+
+  <script>
+    // Click a point to expand it; opening one closes the others. Click again to collapse.
+    document.querySelectorAll('.point-head').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var item = btn.closest('.point');
+        var willOpen = !item.classList.contains('open');
+        document.querySelectorAll('.point').forEach(function (p) {
+          p.classList.remove('open');
+          p.querySelector('.point-head').setAttribute('aria-expanded', 'false');
+        });
+        if (willOpen) {
+          item.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+  </script>
 </body>
 </html>
