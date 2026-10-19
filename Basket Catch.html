@@ -10,7 +10,7 @@
 :root[data-theme="dark"]{--bg:#10262c;--ink:#e6f4f1;--card:#1b3a42}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:"Baloo 2","Trebuchet MS",system-ui,sans-serif;overflow:hidden;touch-action:none;user-select:none}
 #wrap{position:relative;height:100%;max-width:480px;margin:0 auto}
-canvas{display:block;width:100%;height:100%}
+canvas{display:block;width:100%;height:100%}  
 .ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(10,30,36,.78);text-align:center;padding:24px;color:#fff}
 .ov h1{margin:0;font-size:2.4rem;line-height:1}
 .ov p{margin:0;max-width:300px;font-size:1.05rem;line-height:1.35}
@@ -35,7 +35,7 @@ a.ib{background:#e8590c;color:#fff;text-decoration:none;box-shadow:0 3px 0 #a33d
 <canvas id="c"></canvas>
 <button class="ib hide" id="pauseBtn" aria-label="Pause">⏸</button>
 <button class="ib" id="muteBtn" aria-label="Toggle sound">🔊</button>
-<a class="ib" id="homeBtn" href="index%20.html" aria-label="Back to website">🏠</a>
+<a class="ib" id="homeBtn" href="index.html" aria-label="Back to website">🏠</a>
 <div class="ov" id="start">
 <h1>Basket Catch</h1>
 <div class="row"><span>🥦</span><span>🍎</span><span>🥩</span><span>🥚</span></div>
@@ -45,18 +45,18 @@ a.ib{background:#e8590c;color:#fff;text-decoration:none;box-shadow:0 3px 0 #a33d
 <p>The higher your score, the faster the food falls.</p>
 <p>Drag or use ← → to move. Press P to pause.</p>
 <button id="go">Start shopping</button>
-<a class="btnlink" href="index%20.html">← Back to website</a>
+<a class="btnlink" href="index.html">← Back to website</a>
 </div>
 <div class="ov hide" id="over">
 <h1>Checkout!</h1>
 <p id="res"></p>
 <button id="again">Shop again</button>
-<a class="btnlink" href="index%20.html">← Back to website</a>
+<a class="btnlink" href="index.html">← Back to website</a>
 </div>
 <div class="ov hide" id="pauseOv">
 <h1>Paused</h1>
 <div class="btns"><button id="resume">Resume</button><button class="alt" id="restart2">Restart</button></div>
-<a class="btnlink" href="index%20.html">← Back to website</a>
+<a class="btnlink" href="index.html">← Back to website</a>
 </div>
 </div>
 <script>
