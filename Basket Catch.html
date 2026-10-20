@@ -274,7 +274,7 @@ function end(){sfx('over');pauseBtn.classList.add('hide');
       resEl.innerHTML=base+' · Best <b>'+r.best+'</b> · Rank <b>#'+r.rank+'</b>'+stats;
     }).catch(e=>{
       const taken=/name_taken/.test(e.message);
-      resEl.innerHTML=base+' · Best <b>'+best+'</b><br><span style="color:#ffb4ad">'+(taken?'This name belongs to another player. Change player.':'Could not reach the leaderboard. Score not saved.')+'</span>'+stats;
+      resEl.innerHTML=base+' · Best <b>'+best+'</b><br><span style="color:#ffb4ad">'+(taken?'This name belongs to another player. Change player.':'Could not reach the leaderboard. Score not saved.<br><small>Reason: '+esc(e.message||'unknown')+'</small>')+'</span>'+stats;
     });
   }
   setTimeout(()=>document.getElementById('over').classList.remove('hide'),500);
