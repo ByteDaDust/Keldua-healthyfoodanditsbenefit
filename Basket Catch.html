@@ -65,6 +65,7 @@ input{user-select:text;-webkit-user-select:text;touch-action:auto}
 <p>The higher your score, the faster the food falls.</p>
 <p>Drag or use ← → to move. Press P to pause.</p>
 <input id="nameIn" type="text" maxlength="12" placeholder="Your username" autocomplete="nickname" aria-label="Username">
+<div id="nameErr" role="alert" style="min-height:1.1em;font-size:.9rem;color:#ffb4ad;max-width:260px"></div>
 <button id="go">Start shopping</button>
 <button class="alt sm" id="lbBtn1">🏆 Leaderboard</button>
 <a class="btnlink" href="quiz.html">← Back to Quiz</a>
@@ -86,11 +87,10 @@ input{user-select:text;-webkit-user-select:text;touch-action:auto}
 <a class="btnlink" href="index.html">← Back to website</a>
 </div>
 <div class="ov hide" id="lb">
-<h1>🏆 Leaderboard</h1>
+<h1 id="lbTitle" style="user-select:none;cursor:default">🏆 Leaderboard</h1>
 <p class="who" id="lbWho"></p>
 <ol id="lbList"></ol>
 <div id="adminBox">
-<button class="alt sm" id="adminToggle">🔒 Admin login</button>
 <div class="hide" id="adminForm" style="display:flex;flex-direction:column;align-items:center;gap:10px">
 <input id="adminPw" type="password" placeholder="Admin password" autocomplete="off" aria-label="Admin password">
 <button class="sm" id="adminGo">Log in</button>
@@ -112,25 +112,69 @@ addEventListener('resize',fit);fit();
 
 const GOOD=[['🥦',10],['🥕',10],['🍎',10],['🍌',10],['🍓',12],['🥬',10],['🥑',15],['🍅',10],['🥩',15],['🐟',15],['🥚',12],['🍗',15],['🫘',12],['🥜',12]];
 const JUNK=['🍔','🍟','🍩','🥤','🍭','🍕','🍫','🌭'];
-// ---- player + leaderboard (stored in this browser only) ----
-const LB_KEY='basketBoard',USER_KEY='basketUser';
-// SHA-256 of the admin password. To change it, hash a new password and paste the hex here.
+// ---- player + leaderboard ----
+// ONLINE leaderboard: paste your Supabase project URL and anon (public) key below
+// (see supabase-setup.sql). Leave both empty to keep a local, this-browser-only board.
+const SB_URL='https://whpzxiowldbeotxptnwo.supabase.co/rest/v1/';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndocHp4aW93bGRiZW90eHB0bndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MDc0OTksImV4cCI6MjEwODA4MzQ5OX0.4H1DmeqJCrh2LpaJJylwoGpvS5MrUqcsYV7K3xaHYNU';
+const ONLINE=!!(SB_URL&&SB_KEY);
+// Only used in local (offline) mode: SHA-256 of the admin password.
 const ADMIN_HASH='daf436aac6daea4807d93af1487d98667ac75bf0196150e249318075f1b0467b';
-let user='',best=0,adminOn=false;
+const LB_KEY='basketBoard',USER_KEY='basketUser',TOKEN_KEY='basketToken';
+let user='',best=0,adminOn=false,adminPwd='';
 try{user=localStorage.getItem(USER_KEY)||''}catch(e){}
+// per-device id: lets a name belong to the first device that used it
+let token='';try{token=localStorage.getItem(TOKEN_KEY)||''}catch(e){}
+if(!token){token=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():('t'+Math.random().toString(36).slice(2)+Date.now().toString(36));try{localStorage.setItem(TOKEN_KEY,token)}catch(e){}}
 function cleanName(s){return String(s||'').replace(/[^\p{L}\p{N} _.-]/gu,'').replace(/\s+/g,' ').trim().slice(0,12)}
-function getBoard(){
-  try{const b=JSON.parse(localStorage.getItem(LB_KEY)||'[]');
-    return Array.isArray(b)?b.filter(x=>x&&typeof x.n==='string'&&Number.isFinite(x.s)):[]}catch(e){return[]}
+const bestKey=n=>'basketBest:'+n.toLowerCase();
+function loadBest(){try{best=+localStorage.getItem(bestKey(user))||0}catch(e){best=0}}
+function setBest(v){best=v;try{localStorage.setItem(bestKey(user),v)}catch(e){}}
+
+// -- online (Supabase REST) --
+async function rpc(fn,args){
+  const r=await fetch(SB_URL.replace(/\/$/,'')+'/rest/v1/rpc/'+fn,{method:'POST',
+    headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(args)});
+  const t=await r.text();let j=null;try{j=t?JSON.parse(t):null}catch(e){}
+  if(!r.ok)throw new Error((j&&(j.message||j.hint))||('http '+r.status));
+  return j;
 }
-function saveBoard(b){try{localStorage.setItem(LB_KEY,JSON.stringify(b))}catch(e){}}
-function loadBest(){const e=getBoard().find(x=>x.n.toLowerCase()===user.toLowerCase());best=e?e.s:0}
-// keeps each player's best score; returns their rank (1-based)
-function submitScore(name,score){
-  let b=getBoard();const e=b.find(x=>x.n.toLowerCase()===name.toLowerCase());
-  if(e){if(score>e.s){e.s=score;e.n=name}}else b.push({n:name,s:score});
-  b.sort((x,y)=>y.s-x.s);b=b.slice(0,50);saveBoard(b);
-  return b.findIndex(x=>x.n.toLowerCase()===name.toLowerCase())+1;
+// -- local (this browser only) --
+function lGet(){try{const b=JSON.parse(localStorage.getItem(LB_KEY)||'[]');
+  return Array.isArray(b)?b.filter(x=>x&&typeof x.n==='string'&&Number.isFinite(x.s)):[]}catch(e){return[]}}
+function lSave(b){try{localStorage.setItem(LB_KEY,JSON.stringify(b))}catch(e){}}
+async function sha256(s){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return[...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+
+// -- one API for both modes --
+async function fetchBoard(){            // -> [{n,s}] top 10
+  if(ONLINE){
+    const r=await fetch(SB_URL.replace(/\/$/,'')+'/rest/v1/leaderboard?select=name,score&order=score.desc&limit=10',
+      {headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY}});
+    if(!r.ok)throw new Error('http '+r.status);
+    return (await r.json()).map(x=>({n:x.name,s:x.score}));
+  }
+  return lGet().sort((a,b)=>b.s-a.s).slice(0,10);
+}
+async function nameAvailable(name){
+  if(!ONLINE)return true;
+  return (await rpc('name_available',{p_name:name,p_token:token}))!==false;
+}
+async function sendScore(name,score){   // -> {rank,best}
+  if(ONLINE)return rpc('submit_score',{p_name:name,p_score:score,p_token:token});
+  let b=lGet();const e=b.find(x=>x.n.toLowerCase()===name.toLowerCase());
+  if(e){if(score>e.s)e.s=score}else b.push({n:name,s:score});
+  b.sort((x,y)=>y.s-x.s);b=b.slice(0,50);lSave(b);
+  const me=b.find(x=>x.n.toLowerCase()===name.toLowerCase());
+  return {rank:b.indexOf(me)+1,best:me.s};
+}
+async function adminCheck(pw){
+  if(ONLINE)return (await rpc('check_admin',{p_password:pw}))===true;
+  if(!(window.crypto&&crypto.subtle))throw new Error('Admin login needs https:// or localhost.');
+  return (await sha256(pw))===ADMIN_HASH;
+}
+async function adminReset(pw){
+  if(ONLINE){await rpc('reset_leaderboard',{p_password:pw});return}
+  lSave([]);
 }
 loadBest();
 
@@ -219,8 +263,20 @@ function update(dt){
 
 function end(){sfx('over');pauseBtn.classList.add('hide');
   S.run=false;
-  const rank=S.score>0?submitScore(user,S.score):0;loadBest();
-  document.getElementById('res').innerHTML='<b>'+esc(user)+'</b><br>Score <b>'+S.score+'</b> · Best <b>'+best+'</b>'+(rank?' · Rank <b>#'+rank+'</b>':'')+'<br>Healthy items caught: '+S.caught+' · Best combo: '+S.maxCombo+' · Quests done: '+S.qDone;
+  const base='<b>'+esc(user)+'</b><br>Score <b>'+S.score+'</b>';
+  const stats='<br>Healthy items caught: '+S.caught+' · Best combo: '+S.maxCombo+' · Quests done: '+S.qDone;
+  const resEl=document.getElementById('res');
+  if(S.score>best)setBest(S.score);
+  resEl.innerHTML=base+' · Best <b>'+best+'</b>'+(S.score>0?' · Saving score…':'')+stats;
+  if(S.score>0){
+    sendScore(user,S.score).then(r=>{
+      if(!r)return;setBest(r.best);
+      resEl.innerHTML=base+' · Best <b>'+r.best+'</b> · Rank <b>#'+r.rank+'</b>'+stats;
+    }).catch(e=>{
+      const taken=/name_taken/.test(e.message);
+      resEl.innerHTML=base+' · Best <b>'+best+'</b><br><span style="color:#ffb4ad">'+(taken?'This name belongs to another player. Change player.':'Could not reach the leaderboard. Score not saved.')+'</span>'+stats;
+    });
+  }
   setTimeout(()=>document.getElementById('over').classList.remove('hide'),500);
 }
 
@@ -401,11 +457,20 @@ function setPause(p){
 }
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const nameIn=$('nameIn'),lbEl=$('lb'),adminMsg=$('adminMsg');
+const nameIn=$('nameIn'),nameErr=$('nameErr'),lbEl=$('lb'),adminMsg=$('adminMsg');
+nameIn.addEventListener('input',()=>{nameErr.textContent='';nameIn.classList.remove('bad')});
 nameIn.value=user;
-function tryStart(){
+let starting=false;
+async function tryStart(){
+  if(starting)return;
   const n=cleanName(nameIn.value);
   if(!n){nameIn.classList.remove('bad');void nameIn.offsetWidth;nameIn.classList.add('bad');nameIn.focus();return}
+  starting=true;const go=$('go'),label=go.textContent;go.textContent='Checking…';go.disabled=true;
+  let ok=true,err='';
+  try{ok=await nameAvailable(n)}catch(e){err='offline'}
+  go.textContent=label;go.disabled=false;starting=false;
+  if(!ok){nameIn.classList.remove('bad');void nameIn.offsetWidth;nameIn.classList.add('bad');nameErr.textContent='That name is taken by another player. Try a different one.';nameIn.focus();return}
+  nameErr.textContent=err?'Leaderboard offline: you can play, but scores may not save.':'';
   user=n;nameIn.value=n;try{localStorage.setItem(USER_KEY,n)}catch(e){}
   loadBest();startGame();
 }
@@ -415,9 +480,12 @@ $('again').onclick=startGame;
 $('changeBtn').onclick=()=>{$('over').classList.add('hide');$('start').classList.remove('hide');nameIn.focus();nameIn.select()};
 
 // ---- leaderboard screen + admin reset ----
-function renderLB(){
-  const b=getBoard().slice(0,10),ul=$('lbList');ul.innerHTML='';
-  $('lbWho').innerHTML=user?'Playing as <b>'+esc(user)+'</b>':'';
+async function renderLB(){
+  const ul=$('lbList');
+  $('lbWho').innerHTML=(user?'Playing as <b>'+esc(user)+'</b>':'')+(ONLINE?'':'<br><small>Local board (this browser only)</small>');
+  ul.innerHTML='<li class="empty">Loading…</li>';
+  let b;try{b=await fetchBoard()}catch(e){ul.innerHTML='<li class="empty">Could not load the leaderboard.</li>';return}
+  ul.innerHTML='';
   if(!b.length){const li=document.createElement('li');li.className='empty';li.textContent='No scores yet. Be the first!';ul.appendChild(li);return}
   b.forEach((x,i)=>{
     const li=document.createElement('li');if(user&&x.n.toLowerCase()===user.toLowerCase())li.className='me';
@@ -428,33 +496,43 @@ function renderLB(){
   });
 }
 function adminUI(){
-  $('adminToggle').classList.toggle('hide',adminOn||!$('adminForm').classList.contains('hide'));
   $('adminPanel').classList.toggle('hide',!adminOn);
 }
 function openLB(){
-  adminOn=false;$('adminForm').classList.add('hide');$('adminPw').value='';adminMsg.textContent='';
+  adminOn=false;adminPwd='';$('adminForm').classList.add('hide');$('adminPw').value='';adminMsg.textContent='';
   renderLB();adminUI();lbEl.classList.remove('hide');
 }
 $('lbBtn1').onclick=openLB;$('lbBtn2').onclick=openLB;
-$('lbBack').onclick=()=>{adminOn=false;$('adminPw').value='';lbEl.classList.add('hide')};
-$('adminToggle').onclick=()=>{$('adminForm').classList.remove('hide');adminUI();$('adminPw').focus()};
-async function sha256(s){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return[...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+$('lbBack').onclick=()=>{adminOn=false;adminPwd='';$('adminPw').value='';lbEl.classList.add('hide')};
+// Hidden admin entry: tap the "Leaderboard" title 5 times fast, or press Ctrl+Shift+A while the leaderboard is open.
+function showAdminForm(){if(adminOn)return;$('adminForm').classList.remove('hide');adminUI();$('adminPw').focus()}
+let taps=[];
+$('lbTitle').addEventListener('click',()=>{
+  const now=Date.now();taps=taps.filter(t=>now-t<2000);taps.push(now);
+  if(taps.length>=5){taps=[];showAdminForm()}
+});
+addEventListener('keydown',e=>{
+  if(e.ctrlKey&&e.shiftKey&&(e.key==='A'||e.key==='a')&&!lbEl.classList.contains('hide')){e.preventDefault();showAdminForm()}
+});
 async function adminLogin(){
   const pw=$('adminPw').value;$('adminPw').value='';
   if(!pw)return;
-  if(!(window.crypto&&crypto.subtle)){adminMsg.textContent='Admin login needs https:// or localhost.';return}
-  let ok=false;try{ok=(await sha256(pw))===ADMIN_HASH}catch(e){}
-  if(ok){adminOn=true;$('adminForm').classList.add('hide');adminMsg.textContent='Logged in as admin.'}
-  else adminMsg.textContent='Wrong password.';
+  adminMsg.textContent='Checking…';
+  try{
+    if(await adminCheck(pw)){adminOn=true;adminPwd=pw;$('adminForm').classList.add('hide');adminMsg.textContent='Logged in as admin.'}
+    else adminMsg.textContent='Wrong password.';
+  }catch(e){adminMsg.textContent=e.message&&!/^http|Failed to fetch/.test(e.message)?e.message:'Could not reach the server.'}
   adminUI();
 }
 $('adminGo').onclick=adminLogin;
 $('adminPw').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adminLogin()}});
-$('adminOut').onclick=()=>{adminOn=false;adminMsg.textContent='Logged out.';adminUI()};
-$('resetLb').onclick=()=>{
+$('adminOut').onclick=()=>{adminOn=false;adminPwd='';adminMsg.textContent='Logged out.';adminUI()};
+$('resetLb').onclick=async()=>{
   if(!adminOn)return;
-  if(!confirm('Reset the whole leaderboard? This cannot be undone.'))return;
-  saveBoard([]);best=0;renderLB();adminMsg.textContent='Leaderboard reset.';
+  if(!confirm('Reset the whole leaderboard for everyone? This cannot be undone.'))return;
+  adminMsg.textContent='Resetting…';
+  try{await adminReset(adminPwd);setBest(0);try{localStorage.removeItem(bestKey(user))}catch(e){}best=0;adminMsg.textContent='Leaderboard reset.';renderLB()}
+  catch(e){adminMsg.textContent='Reset failed: '+(/bad_password/.test(e.message)?'wrong password.':'could not reach the server.')}
 };
 document.getElementById('resume').onclick=()=>setPause(false);
 document.getElementById('restart2').onclick=startGame;
