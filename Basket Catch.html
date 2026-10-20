@@ -10,7 +10,7 @@
 :root[data-theme="dark"]{--bg:#10262c;--ink:#e6f4f1;--card:#1b3a42}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:"Baloo 2","Trebuchet MS",system-ui,sans-serif;overflow:hidden;touch-action:none;user-select:none}
 #wrap{position:relative;height:100%;max-width:480px;margin:0 auto}
-canvas{display:block;width:100%;height:100%}
+canvas{display:block;width:100%;height:100%}  
 .ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(10,30,36,.78);text-align:center;padding:24px;color:#fff}
 .ov h1{margin:0;font-size:2.4rem;line-height:1}
 .ov p{margin:0;max-width:300px;font-size:1.05rem;line-height:1.35}
@@ -18,7 +18,7 @@ canvas{display:block;width:100%;height:100%}
 button{font:inherit;font-weight:800;font-size:1.3rem;padding:10px 34px;border:0;border-radius:999px;background:var(--accent);color:#fff;cursor:pointer;box-shadow:0 4px 0 #1c6e3d}
 button:active{transform:translateY(3px);box-shadow:0 1px 0 #1c6e3d}
 button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
-.hide{display:none}
+.hide{display:none!important}
 .ib{position:absolute;right:12px;width:42px;height:42px;padding:0;font-size:1.2rem;border-radius:50%;box-shadow:0 3px 0 #1c6e3d;display:flex;align-items:center;justify-content:center}
 #pauseBtn{top:72px}#muteBtn{top:122px;background:#5b7c85;box-shadow:0 3px 0 #3d5860}
 .ov .btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
@@ -28,15 +28,34 @@ a.ib{background:#e8590c;color:#fff;text-decoration:none;box-shadow:0 3px 0 #a33d
 .ov a.btnlink{font-weight:800;font-size:1.05rem;padding:8px 26px;border-radius:999px;background:#5b7c85;color:#fff;text-decoration:none;box-shadow:0 4px 0 #3d5860}
 .ov a.btnlink:active{transform:translateY(3px);box-shadow:0 1px 0 #3d5860}
 .ov a.btnlink:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.ov{overflow-y:auto}
+input{user-select:text;-webkit-user-select:text;touch-action:auto}
+.ov input{font:inherit;font-weight:800;font-size:1.15rem;width:230px;max-width:100%;box-sizing:border-box;padding:10px 18px;border:3px solid #5b7c85;border-radius:999px;background:#fff;color:#17323a;text-align:center;outline:none}
+.ov input:focus{border-color:var(--gold)}
+.ov input.bad{border-color:var(--bad);animation:nope .3s}
+@keyframes nope{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.ov button.sm{font-size:1.05rem;padding:8px 26px}
+.ov button.alt{background:#5b7c85;box-shadow:0 4px 0 #3d5860}
+.ov button.danger{background:var(--bad);box-shadow:0 4px 0 #8f2a23}
+.who{font-size:1rem;opacity:.9}
+.who b{color:var(--gold)}
+#lbList{margin:0;padding:0;list-style:none;width:280px;max-width:100%;text-align:left}
+#lbList li{display:flex;gap:10px;align-items:center;padding:6px 14px;margin-bottom:5px;border-radius:999px;background:rgba(255,255,255,.12);font-weight:800}
+#lbList li.me{background:var(--accent)}
+#lbList .rk{width:26px;text-align:center}
+#lbList .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#lbList li.empty{justify-content:center;font-weight:600;opacity:.8}
+#adminBox{display:flex;flex-direction:column;align-items:center;gap:10px}
+#adminMsg{min-height:1.2em;font-size:.95rem}
 </style>
+<link rel="icon" type="image/png" href="hfwebsitelogo.png">
 </head>
 <body>
 <div id="wrap">
 <canvas id="c"></canvas>
 <button class="ib hide" id="pauseBtn" aria-label="Pause">⏸</button>
 <button class="ib" id="muteBtn" aria-label="Toggle sound">🔊</button>
-<a class="ib" id="homeBtn" href="
-\\\\\\\\\\\\\\\\\\\\\\20.html" aria-label="Back to website">🏠</a>
+<a class="ib" id="homeBtn" href="index.html" aria-label="Back to website">🏠</a>
 <div class="ov" id="start">
 <h1>Basket Catch</h1>
 <div class="row"><span>🥦</span><span>🍎</span><span>🥩</span><span>🥚</span></div>
@@ -45,21 +64,44 @@ a.ib{background:#e8590c;color:#fff;text-decoration:none;box-shadow:0 3px 0 #a33d
 <p>Side quests: collect a set of one food (like 4 🥬) to unlock a temporary boost!</p>
 <p>The higher your score, the faster the food falls.</p>
 <p>Drag or use ← → to move. Press P to pause.</p>
+<input id="nameIn" type="text" maxlength="12" placeholder="Your username" autocomplete="nickname" aria-label="Username">
 <button id="go">Start shopping</button>
-<a class="btnlink" href="quiz.html"> Take the Healthy Food Quiz</a>
-<a class="btnlink" href="index%20.html">← Back to website</a>
+<button class="alt sm" id="lbBtn1">🏆 Leaderboard</button>
+<a class="btnlink" href="quiz.html">← Back to Quiz</a>
+<a class="btnlink" href="index.html">← Back to website</a>
 </div>
 <div class="ov hide" id="over">
 <h1>Checkout!</h1>
 <p id="res"></p>
 <button id="again">Shop again</button>
-<a class="btnlink" href="quiz.html">Take the Healthy Food Quiz</a>
-<a class="btnlink" href="index%20.html">← Back to website</a>
+<button class="alt sm" id="lbBtn2">🏆 Leaderboard</button>
+<button class="alt sm" id="changeBtn">Change player</button>
+<a class="btnlink" href="quiz.html">← Back to Quiz</a>
+<a class="btnlink" href="index.html">← Back to website</a>
 </div>
 <div class="ov hide" id="pauseOv">
 <h1>Paused</h1>
 <div class="btns"><button id="resume">Resume</button><button class="alt" id="restart2">Restart</button></div>
-<a class="btnlink" href="index%20.html">← Back to website</a>
+<a class="btnlink" href="quiz.html">← Back to Quiz</a>
+<a class="btnlink" href="index.html">← Back to website</a>
+</div>
+<div class="ov hide" id="lb">
+<h1>🏆 Leaderboard</h1>
+<p class="who" id="lbWho"></p>
+<ol id="lbList"></ol>
+<div id="adminBox">
+<button class="alt sm" id="adminToggle">🔒 Admin login</button>
+<div class="hide" id="adminForm" style="display:flex;flex-direction:column;align-items:center;gap:10px">
+<input id="adminPw" type="password" placeholder="Admin password" autocomplete="off" aria-label="Admin password">
+<button class="sm" id="adminGo">Log in</button>
+</div>
+<div class="hide" id="adminPanel" style="display:flex;flex-direction:column;align-items:center;gap:10px">
+<button class="danger sm" id="resetLb">Reset leaderboard</button>
+<button class="alt sm" id="adminOut">Log out</button>
+</div>
+<div id="adminMsg" role="status"></div>
+</div>
+<button id="lbBack">Back</button>
 </div>
 </div>
 <script>
@@ -70,7 +112,27 @@ addEventListener('resize',fit);fit();
 
 const GOOD=[['🥦',10],['🥕',10],['🍎',10],['🍌',10],['🍓',12],['🥬',10],['🥑',15],['🍅',10],['🥩',15],['🐟',15],['🥚',12],['🍗',15],['🫘',12],['🥜',12]];
 const JUNK=['🍔','🍟','🍩','🥤','🍭','🍕','🍫','🌭'];
-let best=0;try{best=+localStorage.getItem('basketBest')||0}catch(e){}
+// ---- player + leaderboard (stored in this browser only) ----
+const LB_KEY='basketBoard',USER_KEY='basketUser';
+// SHA-256 of the admin password. To change it, hash a new password and paste the hex here.
+const ADMIN_HASH='daf436aac6daea4807d93af1487d98667ac75bf0196150e249318075f1b0467b';
+let user='',best=0,adminOn=false;
+try{user=localStorage.getItem(USER_KEY)||''}catch(e){}
+function cleanName(s){return String(s||'').replace(/[^\p{L}\p{N} _.-]/gu,'').replace(/\s+/g,' ').trim().slice(0,12)}
+function getBoard(){
+  try{const b=JSON.parse(localStorage.getItem(LB_KEY)||'[]');
+    return Array.isArray(b)?b.filter(x=>x&&typeof x.n==='string'&&Number.isFinite(x.s)):[]}catch(e){return[]}
+}
+function saveBoard(b){try{localStorage.setItem(LB_KEY,JSON.stringify(b))}catch(e){}}
+function loadBest(){const e=getBoard().find(x=>x.n.toLowerCase()===user.toLowerCase());best=e?e.s:0}
+// keeps each player's best score; returns their rank (1-based)
+function submitScore(name,score){
+  let b=getBoard();const e=b.find(x=>x.n.toLowerCase()===name.toLowerCase());
+  if(e){if(score>e.s){e.s=score;e.n=name}}else b.push({n:name,s:score});
+  b.sort((x,y)=>y.s-x.s);b=b.slice(0,50);saveBoard(b);
+  return b.findIndex(x=>x.n.toLowerCase()===name.toLowerCase())+1;
+}
+loadBest();
 
 let S;
 function reset(){S={tier:0,paused:false,score:0,lives:3,combo:0,maxCombo:0,caught:0,t:0,items:[],pops:[],spawn:0,x:W/2,tx:W/2,dbl:0,mag:0,squash:0,shake:0,hurt:0,run:true,
@@ -157,8 +219,8 @@ function update(dt){
 
 function end(){sfx('over');pauseBtn.classList.add('hide');
   S.run=false;
-  if(S.score>best){best=S.score;try{localStorage.setItem('basketBest',best)}catch(e){}}
-  document.getElementById('res').innerHTML='Score <b>'+S.score+'</b> · Best <b>'+best+'</b><br>Healthy items caught: '+S.caught+' · Best combo: '+S.maxCombo+' · Quests done: '+S.qDone;
+  const rank=S.score>0?submitScore(user,S.score):0;loadBest();
+  document.getElementById('res').innerHTML='<b>'+esc(user)+'</b><br>Score <b>'+S.score+'</b> · Best <b>'+best+'</b>'+(rank?' · Rank <b>#'+rank+'</b>':'')+'<br>Healthy items caught: '+S.caught+' · Best combo: '+S.maxCombo+' · Quests done: '+S.qDone;
   setTimeout(()=>document.getElementById('over').classList.remove('hide'),500);
 }
 
@@ -289,7 +351,8 @@ function setX(cx){const r=cv.getBoundingClientRect();S.tx=cx-r.left}
 addEventListener('pointermove',e=>setX(e.clientX));
 addEventListener('pointerdown',e=>setX(e.clientX));
 const keys={};
-addEventListener('keydown',e=>{keys[e.key]=1;if(e.key==='ArrowLeft'||e.key==='ArrowRight')e.preventDefault()});
+const typing=e=>e.target&&e.target.tagName==='INPUT';
+addEventListener('keydown',e=>{if(typing(e))return;keys[e.key]=1;if(e.key==='ArrowLeft'||e.key==='ArrowRight')e.preventDefault()});
 addEventListener('keyup',e=>{keys[e.key]=0});
 setInterval(()=>{if(keys.ArrowLeft)S.tx-=14;if(keys.ArrowRight)S.tx+=14;S.tx=Math.max(0,Math.min(W,S.tx))},16);
 
@@ -336,8 +399,63 @@ function setPause(p){
   if(p){keys.ArrowLeft=0;keys.ArrowRight=0}
   sfx('click');
 }
-document.getElementById('go').onclick=startGame;
-document.getElementById('again').onclick=startGame;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nameIn=$('nameIn'),lbEl=$('lb'),adminMsg=$('adminMsg');
+nameIn.value=user;
+function tryStart(){
+  const n=cleanName(nameIn.value);
+  if(!n){nameIn.classList.remove('bad');void nameIn.offsetWidth;nameIn.classList.add('bad');nameIn.focus();return}
+  user=n;nameIn.value=n;try{localStorage.setItem(USER_KEY,n)}catch(e){}
+  loadBest();startGame();
+}
+$('go').onclick=tryStart;
+nameIn.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();tryStart()}});
+$('again').onclick=startGame;
+$('changeBtn').onclick=()=>{$('over').classList.add('hide');$('start').classList.remove('hide');nameIn.focus();nameIn.select()};
+
+// ---- leaderboard screen + admin reset ----
+function renderLB(){
+  const b=getBoard().slice(0,10),ul=$('lbList');ul.innerHTML='';
+  $('lbWho').innerHTML=user?'Playing as <b>'+esc(user)+'</b>':'';
+  if(!b.length){const li=document.createElement('li');li.className='empty';li.textContent='No scores yet. Be the first!';ul.appendChild(li);return}
+  b.forEach((x,i)=>{
+    const li=document.createElement('li');if(user&&x.n.toLowerCase()===user.toLowerCase())li.className='me';
+    const r=document.createElement('span');r.className='rk';r.textContent=['🥇','🥈','🥉'][i]||(i+1);
+    const n=document.createElement('span');n.className='nm';n.textContent=x.n;
+    const s=document.createElement('span');s.textContent=x.s;
+    li.append(r,n,s);ul.appendChild(li);
+  });
+}
+function adminUI(){
+  $('adminToggle').classList.toggle('hide',adminOn||!$('adminForm').classList.contains('hide'));
+  $('adminPanel').classList.toggle('hide',!adminOn);
+}
+function openLB(){
+  adminOn=false;$('adminForm').classList.add('hide');$('adminPw').value='';adminMsg.textContent='';
+  renderLB();adminUI();lbEl.classList.remove('hide');
+}
+$('lbBtn1').onclick=openLB;$('lbBtn2').onclick=openLB;
+$('lbBack').onclick=()=>{adminOn=false;$('adminPw').value='';lbEl.classList.add('hide')};
+$('adminToggle').onclick=()=>{$('adminForm').classList.remove('hide');adminUI();$('adminPw').focus()};
+async function sha256(s){const d=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return[...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+async function adminLogin(){
+  const pw=$('adminPw').value;$('adminPw').value='';
+  if(!pw)return;
+  if(!(window.crypto&&crypto.subtle)){adminMsg.textContent='Admin login needs https:// or localhost.';return}
+  let ok=false;try{ok=(await sha256(pw))===ADMIN_HASH}catch(e){}
+  if(ok){adminOn=true;$('adminForm').classList.add('hide');adminMsg.textContent='Logged in as admin.'}
+  else adminMsg.textContent='Wrong password.';
+  adminUI();
+}
+$('adminGo').onclick=adminLogin;
+$('adminPw').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adminLogin()}});
+$('adminOut').onclick=()=>{adminOn=false;adminMsg.textContent='Logged out.';adminUI()};
+$('resetLb').onclick=()=>{
+  if(!adminOn)return;
+  if(!confirm('Reset the whole leaderboard? This cannot be undone.'))return;
+  saveBoard([]);best=0;renderLB();adminMsg.textContent='Leaderboard reset.';
+};
 document.getElementById('resume').onclick=()=>setPause(false);
 document.getElementById('restart2').onclick=startGame;
 for(const b of[pauseBtn,muteBtn,document.getElementById('homeBtn')])b.addEventListener('pointerdown',e=>e.stopPropagation());
