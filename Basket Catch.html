@@ -115,8 +115,8 @@ const JUNK=['🍔','🍟','🍩','🥤','🍭','🍕','🍫','🌭'];
 // ---- player + leaderboard ----
 // ONLINE leaderboard: paste your Supabase project URL and anon (public) key below
 // (see supabase-setup.sql). Leave both empty to keep a local, this-browser-only board.
-const SB_URL='https://whpzxiowldbeotxptnwo.supabase.co/rest/v1/';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndocHp4aW93bGRiZW90eHB0bndvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MDc0OTksImV4cCI6MjEwODA4MzQ5OX0.4H1DmeqJCrh2LpaJJylwoGpvS5MrUqcsYV7K3xaHYNU';
+const SB_URL='';
+const SB_KEY='';
 const ONLINE=!!(SB_URL&&SB_KEY);
 // Only used in local (offline) mode: SHA-256 of the admin password.
 const ADMIN_HASH='daf436aac6daea4807d93af1487d98667ac75bf0196150e249318075f1b0467b';
@@ -467,10 +467,10 @@ async function tryStart(){
   if(!n){nameIn.classList.remove('bad');void nameIn.offsetWidth;nameIn.classList.add('bad');nameIn.focus();return}
   starting=true;const go=$('go'),label=go.textContent;go.textContent='Checking…';go.disabled=true;
   let ok=true,err='';
-  try{ok=await nameAvailable(n)}catch(e){err='offline'}
+  try{ok=await nameAvailable(n)}catch(e){err=e.message||'unknown'}
   go.textContent=label;go.disabled=false;starting=false;
   if(!ok){nameIn.classList.remove('bad');void nameIn.offsetWidth;nameIn.classList.add('bad');nameErr.textContent='That name is taken by another player. Try a different one.';nameIn.focus();return}
-  nameErr.textContent=err?'Leaderboard offline: you can play, but scores may not save.':'';
+  nameErr.textContent=err?'Leaderboard offline ('+err+'). You can play, but scores may not save.':'';
   user=n;nameIn.value=n;try{localStorage.setItem(USER_KEY,n)}catch(e){}
   loadBest();startGame();
 }
